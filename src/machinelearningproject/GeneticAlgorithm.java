@@ -7,9 +7,14 @@ package machinelearningproject;
 public class GeneticAlgorithm {
     final static int MAXCAPACITY = 10;
     final static Dataset DATASET = new Dataset(10);
+    final static int POPSIZE = 1;
+    private Individual[] population;
     
     public GeneticAlgorithm() {
-        Individual ind = new Individual();
-        
+        population = new Individual[POPSIZE];
+        for (int i = 0; i < POPSIZE; i++) {
+            population[i] = new Individual();
+            //System.out.println(population[i]);
+        }
     }
 }

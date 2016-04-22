@@ -16,6 +16,7 @@ public class Dataset {
     final static int BOUND = 2500;
     final static String MINTIME = "08:00";
     final static String MAXTIME = "20:00";
+    final static int MAXDEMAND = 5;
     
     /**
      * Creates a new dataset with random positions
@@ -51,7 +52,7 @@ public class Dataset {
             int y = rand.nextInt(BOUND);
             
             //Customer demand
-            int demand = rand.nextInt(GeneticAlgorithm.MAXCAPACITY-1)+1;
+            int demand = rand.nextInt(MAXDEMAND-1)+1;
             
             //Customer time window
             SimpleDateFormat df = new SimpleDateFormat("HH:mm");
