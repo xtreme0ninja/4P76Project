@@ -11,6 +11,7 @@ public class Customer {
     private final Point location; //Location of the customer
     private final int demand; //Amount of goods the customer wants delivered
     private final TimeInterval timeWindow; //Window of time that the customer can accept deliveries
+    private final int index;
     
     /**
      * Creates new customer with given parameters
@@ -19,11 +20,13 @@ public class Customer {
      * @param qty Quantity of goods customer wants delivered
      * @param start Start time of delivery time window
      * @param end End time of delivery time window
+     * @param i Index of this customer
      */
-    public Customer(int x, int y, int qty, Date start, Date end){
+    public Customer(int x, int y, int qty, Date start, Date end, int i){
         location = new Point(x, y);
         demand = qty;
         timeWindow = new TimeInterval(start, end);
+        index = i;
     }
     
     /**
@@ -48,6 +51,14 @@ public class Customer {
      */
     public TimeInterval getInterval(){
         return timeWindow;
+    }
+    
+    /**
+     * Get the index of this customer
+     * @return Customer's index
+     */
+    public int getIndex(){
+        return index;
     }
     
     /**

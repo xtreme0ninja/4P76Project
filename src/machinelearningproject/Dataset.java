@@ -71,7 +71,7 @@ public class Dataset {
             Date start = (t1.before(t2)) ? t1 : t2;
             Date end = (t1.before(t2)) ? t2 : t1;
             
-            customers[i] = new Customer(x, y, demand, start, end);
+            customers[i] = new Customer(x, y, demand, start, end, i);
         }
     }
     
@@ -89,5 +89,13 @@ public class Dataset {
      */
     public Customer[] getCustomers(){
         return customers;
+    }
+    
+    /**
+     * Get the size of the dataset
+     * @return The number of customers in the dataset
+     */
+    public int getSize(){
+        return customers.length;
     }
 }

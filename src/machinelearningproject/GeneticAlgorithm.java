@@ -6,4 +6,10 @@ package machinelearningproject;
  */
 public class GeneticAlgorithm {
     final static int MAXCAPACITY = 10;
+    final static Dataset DATASET = new Dataset(10);
+    
+    public GeneticAlgorithm() {
+        Individual ind = new Individual();
+        
+    }
 }
