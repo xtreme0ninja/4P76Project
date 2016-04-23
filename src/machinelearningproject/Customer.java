@@ -11,7 +11,8 @@ public class Customer {
     private final Point location; //Location of the customer
     private final int demand; //Amount of goods the customer wants delivered
     private final TimeInterval timeWindow; //Window of time that the customer can accept deliveries
-    private final int index;
+    private final int index; //Index of this customer
+    final static int SPEED = 1000; //Travel speed in units/hour
     
     /**
      * Creates new customer with given parameters
@@ -59,6 +60,44 @@ public class Customer {
      */
     public int getIndex(){
         return index;
+    }
+    
+    /**
+     * Get the travel time to the given point
+     * @param p Point to find travel time to
+     * @return The time it takes to travel to the given point
+     */
+    public Date timeTo(Point p){
+        double hours = location.distance(p) / SPEED; //Number of hours of travel
+        long duration = (long)(60*60*1000*hours); //Number of milliseconds of travel
+        return new Date(duration);
+    }
+    
+    /**
+     * Get the travel time to the given customer
+     * @param c Customer to find travel time to
+     * @return The time it takes to travel to the given customer
+     */
+    public Date timeTo(Customer c){
+        return timeTo(c.getLocation());
+    }
+    
+    /**
+     * Get the distance to the given point
+     * @param p Point to measure distance to
+     * @return Distance between the points
+     */
+    public double distanceTo(Point p){
+        return location.distance(p);
+    }
+    
+    /**
+     * Get the distance to the given customer
+     * @param c Customer to measure distance to
+     * @return Distance between the customers
+     */
+    public double distanceTo(Customer c){
+        return distanceTo(c.getLocation());
     }
     
     /**

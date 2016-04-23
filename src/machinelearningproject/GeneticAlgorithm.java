@@ -14,7 +14,6 @@ public class GeneticAlgorithm {
         population = new Individual[POPSIZE];
         for (int i = 0; i < POPSIZE; i++) {
             population[i] = new Individual();
-            //System.out.println(population[i]);
         }
     }
 }

@@ -1,9 +1,8 @@
 package machinelearningproject;
 
 import java.awt.Point;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Random;
 
 /**
@@ -14,8 +13,8 @@ public class Dataset {
     private Customer[] customers; //Array of customers in this dataset
     private Point depot; //Location of the depot
     final static int BOUND = 2500;
-    final static String MINTIME = "08:00";
-    final static String MAXTIME = "20:00";
+    final static long MINTIME = new GregorianCalendar(1970,0,1,8,0,0).getTime().getTime();
+    final static long MAXTIME = new GregorianCalendar(1970,0,1,20,0,0).getTime().getTime();
     final static int MAXDEMAND = 5;
     
     /**
@@ -54,20 +53,9 @@ public class Dataset {
             //Customer demand
             int demand = rand.nextInt(MAXDEMAND-1)+1;
             
-            //Customer time window
-            SimpleDateFormat df = new SimpleDateFormat("HH:mm");
-            //Time must be between the min and max times set for this dataset
-            long min = 0;
-            long max = 0;
-            try{
-                min = df.parse(MINTIME).getTime();
-                max = df.parse(MAXTIME).getTime();
-            } catch(ParseException e){
-                e.printStackTrace();
-            }
-            //Generate two random times
-            Date t1 = new Date(min + (long)rand.nextInt((int)max-(int)min));
-            Date t2 = new Date(min + (long)rand.nextInt((int)max-(int)min));
+            //Generate two random times between the min and max times
+            Date t1 = new Date(MINTIME + (long)rand.nextInt((int)MAXTIME-(int)MINTIME));
+            Date t2 = new Date(MINTIME + (long)rand.nextInt((int)MAXTIME-(int)MINTIME));
             //Use the smaller of these times as the start of the time window, and the larger as the end
             Date start = (t1.before(t2)) ? t1 : t2;
             Date end = (t1.before(t2)) ? t2 : t1;
