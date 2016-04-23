@@ -53,16 +53,12 @@ public class Individual {
             boolean added = r.tryAdd(customer);
             if(!added){
                 routes.add(r);
-                System.out.println("Route completed");
                 updateCost(r);
                 r = new Route();
                 r.tryAdd(customer);
             }
         }
         routes.add(r);
-        System.out.println("Route completed");
-        System.out.println("Cost of the route is :" + cost);
-        System.out.println("Finished. Created " + getNumRoutes() + " routes.");
     }
     
     @Override

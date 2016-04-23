@@ -26,15 +26,8 @@ public class MachineLearningProject extends Application {
      */
     @Override
     public void start(Stage stage) {
-
-        Dataset ds = new Dataset(10);
-        Point depot = ds.getDepot();
-        System.out.println("Depot: {Location: (" + depot.x + ", " + depot.y + ")}");
-        Customer[] customers = ds.getCustomers();
-        for (Customer customer : customers) {
-            System.out.println(customer);
-        }
         GeneticAlgorithm GA = new GeneticAlgorithm();
+        Point depot = GeneticAlgorithm.DATASET.getDepot();
         
         /***************************************************
          * Start graph logic
