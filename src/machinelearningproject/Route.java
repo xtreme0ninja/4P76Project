@@ -10,6 +10,7 @@ import static machinelearningproject.GeneticAlgorithm.MAXCAPACITY;
 /**
  * This class represents one of several routes that make up a potential solution
  * @author James Paterson, 5140082
+ * @author Riley Davidson, 5291398
  */
 public class Route {
     private List<Customer> route;
@@ -90,4 +91,43 @@ public class Route {
             return false;
         }
     }
+    
+    
+    /**
+     * Returns the cost of the route by getting the distance between each customer
+     * and summing them together
+     * 
+     * Doesn't account for traveling from the last customer back to the depot
+     * 
+     * @return Cost of the route
+     */
+    public int getCost(){
+        int cost = 0;
+        
+//        Customer firstCustomer = route.get(0);
+//        cost += getDistanceFromDepotTo(firstCustomer);
+        for(int i = 0 ; i < route.size() - 1 ; i++){
+            Customer currentCustomer = route.get(i);
+            Customer nextCustomer  = route.get(i+1);
+            
+            int x1 = currentCustomer.getLocation().x;
+            int y1 = currentCustomer.getLocation().y;
+            
+            int x2 = nextCustomer.getLocation().x;
+            int y2 = nextCustomer.getLocation().y;
+            
+            //Calculate the distance between the current customer and the next one
+            cost += calculateEuclideanDistance(x1,y1,x2,y2);
+        }
+//        Customer lastCustomer = route.get(route.size());
+//        cost += getDistanceFromDepotTo(lastCustomer);
+        
+        return cost;
+    }
+    
+    
+    private int calculateEuclideanDistance(double x, double y, double x2, double y2) {
+        return (int)Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y - y2, 2));
+    }
+    
 }
