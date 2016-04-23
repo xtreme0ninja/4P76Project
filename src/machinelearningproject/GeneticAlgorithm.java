@@ -12,7 +12,7 @@ public class GeneticAlgorithm {
 
     final static int MAXCAPACITY = 10;
     final static Dataset DATASET = new Dataset(10);
-    final static int POPSIZE = 5;
+    final static int POPSIZE = 10;
     final static int NUMGENERATIONS = 1;
     private Individual[] population;
 
@@ -113,5 +113,13 @@ public class GeneticAlgorithm {
             }
         }
         return false;
+    }
+    
+    /**
+     * Gets the current population of individuals
+     * @return The current population of individuals
+     */
+     public Individual[] getPopulation() {
+        return population;
     }
 }

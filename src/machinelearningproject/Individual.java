@@ -37,6 +37,14 @@ public class Individual {
         
         buildRoutes();
     }
+
+    /**
+     * Gets the list of all the routes in the individual
+     * @return The list of routes
+     */
+    public List<Route> getRoutes() {
+        return routes;
+    }
     
     private void buildRoutes(){
         routes = new ArrayList<>();

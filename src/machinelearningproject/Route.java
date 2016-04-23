@@ -130,4 +130,13 @@ public class Route {
         return (int)Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y - y2, 2));
     }
     
+    
+    /**
+     * Gets the list of all the customers in the route
+     * @return List of customers in route
+     */
+    public List<Customer> getRoute() {
+        return route;
+    }
+    
 }
