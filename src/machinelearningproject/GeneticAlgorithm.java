@@ -38,10 +38,10 @@ public class GeneticAlgorithm {
         for (int i = 0; i < NUMGENERATIONS; i++) {
             population = paretoRank(population);
 
-            System.out.println("Before");
-            for (int j = 0; j < POPSIZE; j++) {
-                System.out.println("Pareto Rank: " + population[j].getParetoRank() + " Cost :" + population[j].getCost() + " Num Routes :" + population[j].getNumRoutes());
-            }
+//            System.out.println("Before");
+//            for (int j = 0; j < POPSIZE; j++) {
+//                System.out.println("Pareto Rank: " + population[j].getParetoRank() + " Cost :" + population[j].getCost() + " Num Routes :" + population[j].getNumRoutes());
+//            }
 
             Individual[] parents = tournamentSelection(4);
 
@@ -53,11 +53,11 @@ public class GeneticAlgorithm {
         }
 
         population = paretoRank(population);
-        System.out.println("===========================================");
-        System.out.println("After");
-        for (int i = 0; i < POPSIZE; i++) {
-            System.out.println("Pareto Rank: " + population[i].getParetoRank() + " Cost :" + population[i].getCost() + " Num Routes :" + population[i].getNumRoutes());
-        }
+//        System.out.println("===========================================");
+//        System.out.println("After");
+//        for (int i = 0; i < POPSIZE; i++) {
+//            System.out.println("Pareto Rank: " + population[i].getParetoRank() + " Cost :" + population[i].getCost() + " Num Routes :" + population[i].getNumRoutes());
+//        }
     }
 
     /**
@@ -228,58 +228,14 @@ public class GeneticAlgorithm {
 
                 //Area before first cutpoint is moved to opposite child if no conflict, if conflict use mapping
                 for (int j = 0; j < cutPoint1; j++) {
-                    boolean in1 = false;
-                    boolean in2 = false;
-
-                    //Check for conflict
-                    for (int k = cutPoint1; k < cutPoint2; k++) {
-                        if (parent1[j].getIndex() == child1[k].getIndex()) {
-                            in1 = true;
-                        }
-                        if (parent2[j].getIndex() == child2[k].getIndex()) {
-                            in2 = true;
-                        }
-                    }
-
-                    if (!in1) {
-                        child1[j] = parent1[j];
-                    } else {
-                        child1[j] = (Customer) map1to2.get(parent1[j]);
-                    }
-
-                    if (!in2) {
-                        child2[j] = parent2[j];
-                    } else {
-                        child2[j] = (Customer) map2to1.get(parent2[j]);
-                    }
+                    child1[j] = assignWithMapping(parent1[j], child1, map1to2, cutPoint1, cutPoint2);
+                    child2[j] = assignWithMapping(parent2[j], child2, map2to1, cutPoint1, cutPoint2);
                 }
 
                 //Area after second cutpoint is moved to opposite child if no conflict, if conflict use mapping
                 for (int j = cutPoint2; j < DATASET.getSize(); j++) {
-                    boolean in1 = false;
-                    boolean in2 = false;
-
-                    //Check for conflict
-                    for (int k = cutPoint1; k < cutPoint2; k++) {
-                        if (parent1[j].getIndex() == child1[k].getIndex()) {
-                            in1 = true;
-                        }
-                        if (parent2[j].getIndex() == child2[k].getIndex()) {
-                            in2 = true;
-                        }
-                    }
-
-                    if (!in1) {
-                        child1[j] = parent1[j];
-                    } else {
-                        child1[j] = (Customer) map1to2.get(parent1[j]);
-                    }
-
-                    if (!in2) {
-                        child2[j] = parent2[j];
-                    } else {
-                        child2[j] = (Customer) map2to1.get(parent2[j]);
-                    }
+                    child1[j] = assignWithMapping(parent1[j], child1, map1to2, cutPoint1, cutPoint2);
+                    child2[j] = assignWithMapping(parent2[j], child2, map2to1, cutPoint1, cutPoint2);
                 }
 
                 children[i] = new Individual(child1);
@@ -291,6 +247,34 @@ public class GeneticAlgorithm {
         }
 
         return children;
+    }
+    
+    /**
+     * Finds the correct customer to insert via PMX
+     * @param toAssign Customer in parent to be assigned
+     * @param into Child chromosome being inserted into, should already have section between cut points assigned
+     * @param mapping Mapping function to handle conflicts with area between cut points
+     * @param cp1 First cut point
+     * @param cp2 Second cut point
+     * @return The customer to be inserted
+     */
+    private Customer assignWithMapping(Customer toAssign, Customer[] into, Map mapping, int cp1, int cp2){
+        boolean conflict = true;
+        Customer toCheck = toAssign;
+        while(conflict){
+            conflict = false;
+            //Check for conflict
+            for (int k = cp1; k < cp2; k++) {
+                if(toCheck.getIndex() == into[k].getIndex()){
+                    //If there's a conflict, get the customer the conflicting customer maps to
+                    toCheck = (Customer) mapping.get(toCheck);
+                    k = cp2;
+                    //Check for conflicts with this new customer
+                    conflict = true;
+                }
+            }
+        }
+        return toCheck;
     }
 
     /**
