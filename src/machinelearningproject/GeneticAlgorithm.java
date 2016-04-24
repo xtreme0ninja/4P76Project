@@ -18,6 +18,9 @@ public class GeneticAlgorithm {
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 25;
     private final static int CROSSMETHOD = 1; //1 for PMX
+    private final static int MUTATEMETHOD = 1; //1 for random swap
+    private final static double CROSSRATE = 0.8;
+    private final static double MUTATERATE = 0.1;
     private Individual[] population;
 
     public GeneticAlgorithm() {
@@ -51,6 +54,8 @@ public class GeneticAlgorithm {
             Individual[] parents = tournamentSelection(4);
 
             Individual[] children = crossover(parents);
+            
+            children = mutate(children);
             
             population = children;
         }
@@ -188,98 +193,132 @@ public class GeneticAlgorithm {
      */
     private Individual[] crossoverPMX(Individual[] parents){
         Random rand = new Random();
-        Individual[] children = new Individual[population.length];
+        Individual[] children = new Individual[parents.length];
         
         //Gets children for two parents at a time
         for (int i = 0; i < parents.length; i+=2) {
-            //Parents
-            Customer[] parent1 = parents[i].getChromosome();
-            Customer[] parent2 = parents[i+1].getChromosome();
-            
-            //Generate cut points
-            int num1 = rand.nextInt(DATASET.getSize() + 1);
-            int num2 = rand.nextInt(DATASET.getSize() + 1);
-            int cutPoint1 = Integer.min(num1, num2);
-            int cutPoint2 = Integer.max(num1, num2);
+            if (rand.nextDouble() < CROSSRATE){
+                //Parents
+                Customer[] parent1 = parents[i].getChromosome();
+                Customer[] parent2 = parents[i+1].getChromosome();
 
-            //Init children
-            Customer[] child1 = new Customer[DATASET.getSize()];
-            Customer[] child2 = new Customer[DATASET.getSize()];
-            
-            //For conflicts in making children
-            Map map1to2 = new HashMap();
-            Map map2to1 = new HashMap();
+                //Generate cut points
+                int num1 = rand.nextInt(DATASET.getSize() + 1);
+                int num2 = rand.nextInt(DATASET.getSize() + 1);
+                int cutPoint1 = Integer.min(num1, num2);
+                int cutPoint2 = Integer.max(num1, num2);
 
-            //Area between cutpoints is moved to opposite child
-            for (int j = cutPoint1; j < cutPoint2; j++) {
-                child1[j] = parent2[j];
-                child2[j] = parent1[j];
-                
-                //Add to mapping for conflicts
-                map1to2.put(child1[j], child2[j]);
-                map2to1.put(child2[j], child1[j]);
+                //Init children
+                Customer[] child1 = new Customer[DATASET.getSize()];
+                Customer[] child2 = new Customer[DATASET.getSize()];
+
+                //For conflicts in making children
+                Map map1to2 = new HashMap();
+                Map map2to1 = new HashMap();
+
+                //Area between cutpoints is moved to opposite child
+                for (int j = cutPoint1; j < cutPoint2; j++) {
+                    child1[j] = parent2[j];
+                    child2[j] = parent1[j];
+
+                    //Add to mapping for conflicts
+                    map1to2.put(child1[j], child2[j]);
+                    map2to1.put(child2[j], child1[j]);
+                }
+
+                //Area before first cutpoint is moved to opposite child if no conflict, if conflict use mapping
+                for (int j = 0; j < cutPoint1; j++) {
+                    boolean in1 = false;
+                    boolean in2 = false;
+
+                    //Check for conflict
+                    for (int k = cutPoint1; k < cutPoint2; k++) {
+                        if(parent1[j].getIndex() == child1[k].getIndex()){
+                            in1 = true;
+                        }
+                        if(parent2[j].getIndex() == child2[k].getIndex()){
+                            in2 = true;
+                        }
+                    }
+
+                    if(!in1){
+                        child1[j] = parent1[j];
+                    } else {
+                        child1[j] = (Customer)map1to2.get(parent1[j]);
+                    }
+
+                    if(!in2){
+                        child2[j] = parent2[j];
+                    } else {
+                        child2[j] = (Customer)map2to1.get(parent2[j]);
+                    }
+                }
+
+                //Area after second cutpoint is moved to opposite child if no conflict, if conflict use mapping
+                for (int j = cutPoint2; j < DATASET.getSize(); j++) {
+                    boolean in1 = false;
+                    boolean in2 = false;
+
+                    //Check for conflict
+                    for (int k = cutPoint1; k < cutPoint2; k++) {
+                        if(parent1[j].getIndex() == child1[k].getIndex()){
+                            in1 = true;
+                        }
+                        if(parent2[j].getIndex() == child2[k].getIndex()){
+                            in2 = true;
+                        }
+                    }
+
+                    if(!in1){
+                        child1[j] = parent1[j];
+                    } else {
+                        child1[j] = (Customer)map1to2.get(parent1[j]);
+                    }
+
+                    if(!in2){
+                        child2[j] = parent2[j];
+                    } else {
+                        child2[j] = (Customer)map2to1.get(parent2[j]);
+                    }
+                }
+
+                children[i] = new Individual(child1);
+                children[i+1] = new Individual(child2);
+            } else {
+                children[i] = parents[i];
+                children[i+1] = parents[i+1];
             }
-            
-            //Area before first cutpoint is moved to opposite child if no conflict, if conflict use mapping
-            for (int j = 0; j < cutPoint1; j++) {
-                boolean in1 = false;
-                boolean in2 = false;
-                
-                //Check for conflict
-                for (int k = cutPoint1; k < cutPoint2; k++) {
-                    if(parent1[j].getIndex() == child1[k].getIndex()){
-                        in1 = true;
-                    }
-                    if(parent2[j].getIndex() == child2[k].getIndex()){
-                        in2 = true;
-                    }
-                }
-                
-                if(!in1){
-                    child1[j] = parent1[j];
-                } else {
-                    child1[j] = (Customer)map1to2.get(parent1[j]);
-                }
-                
-                if(!in2){
-                    child2[j] = parent2[j];
-                } else {
-                    child2[j] = (Customer)map2to1.get(parent2[j]);
-                }
-            }
-            
-            //Area after second cutpoint is moved to opposite child if no conflict, if conflict use mapping
-            for (int j = cutPoint2; j < DATASET.getSize(); j++) {
-                boolean in1 = false;
-                boolean in2 = false;
-                
-                //Check for conflict
-                for (int k = cutPoint1; k < cutPoint2; k++) {
-                    if(parent1[j].getIndex() == child1[k].getIndex()){
-                        in1 = true;
-                    }
-                    if(parent2[j].getIndex() == child2[k].getIndex()){
-                        in2 = true;
-                    }
-                }
-                
-                if(!in1){
-                    child1[j] = parent1[j];
-                } else {
-                    child1[j] = (Customer)map1to2.get(parent1[j]);
-                }
-                
-                if(!in2){
-                    child2[j] = parent2[j];
-                } else {
-                    child2[j] = (Customer)map2to1.get(parent2[j]);
-                }
-            }
-            
-            children[i] = new Individual(child1);
-            children[i+1] = new Individual(child2);
         }
         
+        return children;
+    }
+    
+    private Individual[] mutate(Individual[] parents){
+        if(MUTATEMETHOD == 1){
+            return mutateSwap(parents);
+        }
+        return null;
+    }
+    
+    private Individual[] mutateSwap(Individual[] parents){
+        Individual[] children = new Individual[parents.length];
+        Random rand = new Random();
+        
+        for (int i = 0; i < parents.length; i++) {
+            if(rand.nextDouble() < MUTATERATE){
+                int point1 = rand.nextInt(DATASET.getSize());
+                int point2 = rand.nextInt(DATASET.getSize());
+                
+                Customer[] dna = parents[i].getChromosome();
+                Customer temp = dna[point1];
+                dna[point1] = dna[point2];
+                dna[point2] = temp;
+                
+                children[i] = new Individual(dna);
+            } else {
+                children[i] = parents[i];
+            }
+        }
         return children;
     }
 }
