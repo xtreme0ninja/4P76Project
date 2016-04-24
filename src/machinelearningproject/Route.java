@@ -111,5 +111,13 @@ public class Route {
     public List<Customer> getRoute() {
         return route;
     }
+
+    /**
+     * Removes the given customer from the route
+     * @param c The customer to remove
+     */    
+    public void removeCustomer(Customer c){
+        route.remove(c);
+    }
     
 }
