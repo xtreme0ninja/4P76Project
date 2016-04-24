@@ -27,6 +27,7 @@ public class MachineLearningProject extends Application {
     @Override
     public void start(Stage stage) {
         GeneticAlgorithm GA = new GeneticAlgorithm();
+        GA.evolve();
         Point depot = GeneticAlgorithm.DATASET.getDepot();
         
         /***************************************************

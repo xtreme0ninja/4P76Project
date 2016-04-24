@@ -37,6 +37,15 @@ public class Individual {
         
         buildRoutes();
     }
+    
+    /**
+     * Create a new individual with the given chromosome
+     * @param dna An array of customers to use as the chromosome
+     */
+    public Individual(Customer[] dna){
+        chromosome = dna;
+        buildRoutes();
+    }
 
     /**
      * Gets the list of all the routes in the individual
@@ -115,5 +124,9 @@ public class Individual {
       */
     public void setParetoRank(int paretoRank) {
         this.paretoRank = paretoRank;
+    }
+    
+    public Customer[] getChromosome(){
+        return chromosome;
     }
 }
