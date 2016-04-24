@@ -17,7 +17,7 @@ public class GeneticAlgorithm {
     final static Dataset DATASET = new Dataset(10);
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 25;
-    private final static int CROSSMETHOD = 1; //1 for PMX , 2 for BCRC
+    private final static int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private final static int MUTATEMETHOD = 1; //1 for random swap
     private final static double CROSSRATE = 0.8;
     private final static double MUTATERATE = 0.1;
@@ -315,6 +315,10 @@ public class GeneticAlgorithm {
             Individual child1 = parent1;
             Individual child2 = parent2;
 
+            if(parent1.getNumRoutes() <= 0 || parent2.getNumRoutes() <= 0){
+                int j = 12;
+            }
+            
             //Get the routes to add to the children
             Route parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
             Route parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
@@ -362,10 +366,11 @@ public class GeneticAlgorithm {
                     Route r2 = new Route();
                     r2.tryAdd(c);
                     child1.addRoute(r2);
+                    added = false;
                 }
             }
 
-            added = false;
+            
             for (Customer c : parent1Route.getRoute()) {
                 for (Route r : child2.getRoutes()) {
                     success = r.tryAdd(c);
@@ -377,7 +382,8 @@ public class GeneticAlgorithm {
                 if (added != true) {
                     Route r2 = new Route();
                     r2.tryAdd(c);
-                    child1.addRoute(r2);
+                    child2.addRoute(r2);
+                    added = false;
                 }
             }
 

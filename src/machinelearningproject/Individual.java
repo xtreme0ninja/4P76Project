@@ -3,7 +3,6 @@ package machinelearningproject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import static machinelearningproject.GeneticAlgorithm.DATASET;
 import org.apache.commons.lang3.ArrayUtils;
@@ -21,8 +20,6 @@ public class Individual {
     private List<Route> routes;
     private int cost;
     private int paretoRank;
-    
-
 
     /**
      * Create a new individual with a random chromosome
@@ -85,28 +82,52 @@ public class Individual {
      * @param r The route which holds the customers to remove
      */
     public void removeCustomersFromChromosomeOnRoute(Route r) {
-        Iterator<Customer> iter = r.getRoute().iterator();
-        while(iter.hasNext()){
-            Customer c = iter.next();
-            for (Customer custInChromosome : chromosome) {
-                if (c.equals(custInChromosome)) {
-                    //If this customer exist in the chromosome, remove it
-                    //chromosome = ArrayUtils.removeElement(chromosome, custInChromosome);
-
-                    //We then need to remove the customer from any routes that are currently holding it
-                    for (Route r2 : routes) {
-                        Iterator<Customer> iter2 = r2.getRoute().iterator();
-                        while(iter2.hasNext()){
-                            Customer c2 = iter2.next();
-                            if (c2.equals(c)) {
-                                r2.removeCustomer(c);
-                                break;
-                            }
-                        }
+        
+        //Need to save the customer to delete from the route
+        //and the index of the route which its being deleted from
+        ArrayList<Customer> toDelete = new ArrayList<Customer>();
+        ArrayList<Integer> routeToDeleteFrom = new ArrayList<Integer>();
+        
+        
+        //Find all customers that are to be deleted and which route they belong to
+        for(Customer c : r.getRoute()){
+            for(int i = 0; i < routes.size() ; i++){
+                Route r2 = routes.get(i);
+                for (Customer c2 : r2.getRoute()) {
+                    if (c.equals(c2)) {
+                        toDelete.add(c2);
+                        routeToDeleteFrom.add(i);
                     }
                 }
             }
         }
+        
+        //Delete all the customers that were given to function
+        for(int i = 0 ; i < toDelete.size() ; i++){
+            Customer cDelete = toDelete.get(i);
+            int indexOfRoute = routeToDeleteFrom.get(i);
+            routes.get(indexOfRoute).removeCustomer(cDelete);
+        }
+        
+        
+        checkForEmptyRoutes();
+    }
+    
+    /**
+     * Checks to see if there are any empty routes in the current individual and
+     * will remove them if there are.
+     */
+    
+    private void checkForEmptyRoutes(){
+        
+        ArrayList<Route> routesToDelete = new ArrayList<Route>();
+        for(Route r : routes){
+            if(r.getRoute().size() <= 0){
+                routesToDelete.add(r);
+            }
+        }
+        routes.removeAll(routesToDelete);
+       
     }
 
     @Override
@@ -167,12 +188,13 @@ public class Individual {
     public void setParetoRank(int paretoRank) {
         this.paretoRank = paretoRank;
     }
-    
-     /**
+
+    /**
      * Adds the route to the individual
+     *
      * @param r Route to add
      */
-    public void addRoute(Route r){
+    public void addRoute(Route r) {
         routes.add(r);
     }
 
