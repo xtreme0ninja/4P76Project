@@ -111,6 +111,14 @@ public class Route {
     public List<Customer> getRoute() {
         return route;
     }
+    
+    /**
+     * Get the number of customers in this route
+     * @return The length of the route
+     */
+    public int getLength(){
+        return route.size();
+    }
 
     /**
      * Removes the given customer from the route
@@ -120,4 +128,17 @@ public class Route {
         route.remove(c);
     }
     
+    @Override
+    public String toString() {
+        String s = "Route : (";
+        
+        for (int i = 0; i < route.size(); i++) {
+            s += route.get(i).getIndex();
+            if (i != route.size() - 1) {
+                s += ", ";
+            }
+        }
+        s += ")";
+        return s;
+    }
 }

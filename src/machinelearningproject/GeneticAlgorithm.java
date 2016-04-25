@@ -1,6 +1,9 @@
 package machinelearningproject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,7 +21,7 @@ public class GeneticAlgorithm {
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 25;
     private final static int CROSSMETHOD = 1; //1 for PMX , 2 for BCRC
-    private final static int MUTATEMETHOD = 1; //1 for random swap
+    private final static int MUTATEMETHOD = 2; //1 for random swap, 2 for route inversion
     private final static double CROSSRATE = 0.8;
     private final static double MUTATERATE = 0.1;
     private Individual[] population;
@@ -361,7 +364,7 @@ public class GeneticAlgorithm {
                 if (added != true) {
                     Route r2 = new Route();
                     r2.tryAdd(c);
-                    child1.addRoute(r2);
+                    child2.addRoute(r2);
                 }
             }
 
@@ -381,15 +384,27 @@ public class GeneticAlgorithm {
         return children;
     }
 
+    /**
+     * Performs a mutation operation
+     * @param parents Set of individuals to perform mutation on
+     * @return Mutated individuals
+     */
     private Individual[] mutate(Individual[] parents) {
         if (MUTATEMETHOD == 1) {
             return mutateSwap(parents);
+        } else if (MUTATEMETHOD == 2){
+            return mutateRouteInversion(parents);
         }
         return null;
     }
 
+    /**
+     * Performs a swap mutation, switching the position of two customers in the chromosome
+     * @param parents Set of individuals to perform mutation on
+     * @return Mutated individuals
+     */
     private Individual[] mutateSwap(Individual[] parents) {
-        Individual[] children = new Individual[parents.length];
+        Individual[] mutated = new Individual[parents.length];
         Random rand = new Random();
 
         for (int i = 0; i < parents.length; i++) {
@@ -402,11 +417,75 @@ public class GeneticAlgorithm {
                 dna[point1] = dna[point2];
                 dna[point2] = temp;
 
-                children[i] = new Individual(dna);
+                mutated[i] = new Individual(dna);
             } else {
-                children[i] = parents[i];
+                mutated[i] = parents[i];
             }
         }
-        return children;
+        return mutated;
+    }
+    
+    /**
+     * Performs a constrained route inversion mutation.
+     * One route of length 2 or 3 is chosen at random to have its direction reversed.
+     * @param parents Set of individuals to perform mutation on
+     * @return Mutated individuals
+     */
+    private Individual[] mutateRouteInversion(Individual[] parents){
+        Individual[] mutated = new Individual[parents.length];
+        Random rand = new Random();
+        
+        for (int i = 0; i < parents.length; i++) {
+            if(rand.nextDouble() < MUTATERATE){
+                List<Route> routes = parents[i].getRoutes();
+                
+                //Don't consider routes with too few or too many customers, ideal is 2 to 3
+                //Route with 1 customer won't change after inversion
+                //Route with more than 3 customers has a high chance of time windows not lining up, causing split into multiple new routes
+                List<Route> trimmedRoutes = new ArrayList<>();
+                for (Route route : routes) {
+                    if(route.getLength() > 1 && route.getLength() < 4){
+                        trimmedRoutes.add(route);
+                    }
+                }
+                
+                if(trimmedRoutes.size() > 0){
+                    //If there are viable routes to reverse, choose one at random
+                    Route selectedRoute = trimmedRoutes.get(rand.nextInt(trimmedRoutes.size()));
+                    
+                    
+                    //Get the start and end points of the route on the chromosome
+                    int routeStart = 0;
+                    for (int j = 0; j < routes.size(); j++) {
+                        if(routes.get(j) == selectedRoute){
+                            j = routes.size();
+                        } else {
+                            routeStart += routes.get(j).getLength();
+                        }
+                    }
+                    int routeEnd = routeStart + selectedRoute.getLength();
+                    
+                    //Reverse the selected route
+                    List<Customer> routeCustomers = new ArrayList<>(selectedRoute.getRoute());
+                    Collections.reverse(routeCustomers);
+                    
+                    //Put together new chromosome with the reversed route
+                    Customer[] dna = parents[i].getChromosome();
+                    for (int j = routeStart; j < routeEnd; j++) {
+                        dna[j] = routeCustomers.get(j-routeStart);
+                    }
+                    
+                    //Add to mutated list
+                    mutated[i] = new Individual(dna);
+                } else{
+                    //No routes of correct length, no mutation is done
+                    mutated[i] = parents[i];
+                }
+            } else {
+                mutated[i] = parents[i];
+            }
+        }
+        
+        return mutated;
     }
 }
