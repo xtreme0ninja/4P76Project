@@ -61,6 +61,16 @@ public class Individual {
         return routes;
     }
 
+    public int getNumCustomersInRoutes() {
+        int num = 0;
+        for (Route r : routes) {
+            for (Customer c : r.getRoute()) {
+                num++;
+            }
+        }
+        return num;
+    }
+
     private void buildRoutes() {
         routes = new ArrayList<>();
         Route r = new Route();
@@ -81,7 +91,11 @@ public class Individual {
      *
      * @param r The route which holds the customers to remove
      */
-    public void removeCustomersFromChromosomeOnRoute(Route r) {
+    public Route removeCustomersFromChromosomeOnRoute(Route inputRoute, int numBefore) {
+
+        //Need to deep copy the input route so if the route exists fully in this
+        //individual it doesnt remove the customers from the input route aswell
+        Route r = new Route(inputRoute);
         
         //Need to save the customer to delete from the route
         //and the index of the route which its being deleted from
@@ -89,8 +103,8 @@ public class Individual {
         ArrayList<Integer> routeToDeleteFrom = new ArrayList<Integer>();
         
         //Find all customers that are to be deleted and which route they belong to
-        for(Customer c : r.getRoute()){
-            for(int i = 0; i < routes.size() ; i++){
+        for (Customer c : r.getRoute()) {
+            for (int i = 0; i < routes.size(); i++) {
                 Route r2 = routes.get(i);
                 for (Customer c2 : r2.getRoute()) {
                     if (c.equals(c2)) {
@@ -100,33 +114,32 @@ public class Individual {
                 }
             }
         }
-        
+
         //Delete all the customers that were given to function
-        for(int i = 0 ; i < toDelete.size() ; i++){
+        for (int i = 0; i < toDelete.size(); i++) {
             Customer cDelete = toDelete.get(i);
             int indexOfRoute = routeToDeleteFrom.get(i);
             routes.get(indexOfRoute).removeCustomer(cDelete);
         }
-        
-        
         checkForEmptyRoutes();
+        
+        return r;
     }
-    
+
     /**
      * Checks to see if there are any empty routes in the current individual and
      * will remove them if there are.
      */
-    
-    private void checkForEmptyRoutes(){
-        
+    private void checkForEmptyRoutes() {
+
         ArrayList<Route> routesToDelete = new ArrayList<Route>();
-        for(Route r : routes){
-            if(r.getRoute().size() <= 0){
+        for (Route r : routes) {
+            if (r.getRoute().size() <= 0) {
                 routesToDelete.add(r);
             }
         }
         routes.removeAll(routesToDelete);
-       
+
     }
 
     @Override

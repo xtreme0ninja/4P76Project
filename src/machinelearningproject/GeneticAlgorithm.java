@@ -17,7 +17,7 @@ public class GeneticAlgorithm {
     final static Dataset DATASET = new Dataset(10);
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 25;
-    private final static int CROSSMETHOD = 1; //1 for PMX , 2 for BCRC
+    private final static int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private final static int MUTATEMETHOD = 1; //1 for random swap
     private final static double CROSSRATE = 0.8;
     private final static double MUTATERATE = 0.1;
@@ -299,46 +299,32 @@ public class GeneticAlgorithm {
             Individual child1 = parent1;
             Individual child2 = parent2;
 
-            if(parent1.getNumRoutes() <= 0 || parent2.getNumRoutes() <= 0){
-                int j = 12;
-            }
-            
             //Get the routes to add to the children
             Route parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
             Route parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
 
-            //Debugging
-            System.out.println("Going to remove the following customers");
-            for (Customer c : parent2Route.getRoute()) {
-                System.out.println(c.getIndex() + ",");
-            }
-            System.out.println("Before removing customers from routes");
-            for (Route r : child1.getRoutes()) {
-                System.out.println("-------New route-------");
-                for (Customer c : r.getRoute()) {
-                    System.out.println(c.getIndex() + ",");
-                }
-            }
-
             //Remove the customers in the chosen route from the other parent from child
+            parent2Route = child1.removeCustomersFromChromosomeOnRoute(parent2Route, parent2Route.getRoute().size());
+            parent1Route = child2.removeCustomersFromChromosomeOnRoute(parent1Route, parent1Route.getRoute().size());
+
+            //Add the removed customers back into route
+            addRoutesCustomersToIndividual(parent2Route,child1);
+            addRoutesCustomersToIndividual(parent1Route,child2);
             
-            child1.removeCustomersFromChromosomeOnRoute(parent2Route);
-            child2.removeCustomersFromChromosomeOnRoute(parent1Route);
+            //Assign the children to the childs created
+            children[i] = child1;
+            children[i + 1] = child2;
 
-//            //Debugging
-            System.out.println("After removing customers from routes");
-            for (Route r : child1.getRoutes()) {
-                System.out.println("-------New route-------");
-                for (Customer c : r.getRoute()) {
-                    System.out.println(c.getIndex() + ",");
-                }
-            }
+        }
 
-            //Add the removed customers back into routes
-            boolean success = false;
-            boolean added = false;
-            for (Customer c : parent2Route.getRoute()) {
-                for (Route r : child1.getRoutes()) {
+        return children;
+    }
+    
+    private void addRoutesCustomersToIndividual(Route toAdd, Individual toAddTo){
+        boolean success = false;
+            boolean added = false;//Used to tell if we've added a customer back in
+            for (Customer c : toAdd.getRoute()) {
+                for (Route r : toAddTo.getRoutes()) {
                     success = r.tryAdd(c);
                     if (success) {
                         added = true;
@@ -349,42 +335,10 @@ public class GeneticAlgorithm {
                 if (added != true) {
                     Route r2 = new Route();
                     r2.tryAdd(c);
-                    child1.addRoute(r2);
-                    added = false;
+                    toAddTo.addRoute(r2);
                 }
+                added = false;
             }
-
-            
-            for (Customer c : parent1Route.getRoute()) {
-                for (Route r : child2.getRoutes()) {
-                    success = r.tryAdd(c);
-                    if (success) {
-                        added = true;
-                        break;
-                    }
-                }
-                if (added != true) {
-                    Route r2 = new Route();
-                    r2.tryAdd(c);
-                    child2.addRoute(r2);
-                    added = false;
-                }
-            }
-
-            //Debugging
-            System.out.println("After adding back customers ro route");
-            for (Route r : child1.getRoutes()) {
-                System.out.println("-------New route-------");
-                for (Customer c : r.getRoute()) {
-                    System.out.println(c.getIndex() + ",");
-                }
-            }
-            children[i] = child1;
-            children[i + 1] = child2;
-
-        }
-
-        return children;
     }
 
     private Individual[] mutate(Individual[] parents) {

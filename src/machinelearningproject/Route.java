@@ -28,6 +28,15 @@ public class Route {
         completeTime.setTime(startTime);
     }
     
+    public Route(Route r){
+        route = new ArrayList<>();
+        for(Customer c : r.getRoute()){
+            route.add(c);
+        }
+        load = r.load;
+        completeTime = r.completeTime;
+    }
+    
     /**
      * Adds the given customer to the route, if the vehicle has sufficient capacity
      * @param c Customer to attempt to add
