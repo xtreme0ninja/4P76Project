@@ -88,7 +88,6 @@ public class Individual {
         ArrayList<Customer> toDelete = new ArrayList<Customer>();
         ArrayList<Integer> routeToDeleteFrom = new ArrayList<Integer>();
         
-        
         //Find all customers that are to be deleted and which route they belong to
         for(Customer c : r.getRoute()){
             for(int i = 0; i < routes.size() ; i++){
