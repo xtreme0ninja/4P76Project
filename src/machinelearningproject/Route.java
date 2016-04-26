@@ -25,7 +25,7 @@ public class Route {
     public Route() {
         route = new ArrayList<>();
         load = 0;
-        Date startTime = new Date(Dataset.MINTIME);
+        Date startTime = new Date(GeneticAlgorithm.DATASET.minTime);
         completeTime = Calendar.getInstance();
         completeTime.setTime(startTime);
     }
@@ -217,6 +217,14 @@ public class Route {
     public List<Customer> getRoute() {
         return route;
     }
+    
+    /**
+     * Get the number of customers in this route
+     * @return The length of the route
+     */
+    public int getLength(){
+        return route.size();
+    }
 
     /**
      * Removes the given customer from the route
@@ -225,6 +233,20 @@ public class Route {
      */
     public void removeCustomer(Customer c) {
         route.remove(c);
+    }
+
+    @Override
+    public String toString() {
+        String s = "Route : (";
+        
+        for (int i = 0; i < route.size(); i++) {
+            s += route.get(i).getIndex();
+            if (i != route.size() - 1) {
+                s += ", ";
+            }
+        }
+        s += ")";
+        return s;
     }
 
 }
