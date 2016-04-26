@@ -17,7 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class GeneticAlgorithm {
 
     final static int MAXCAPACITY = 10;
-    final static Dataset DATASET = new Dataset(10);
+    final static Dataset DATASET = new Dataset("Data", 0);
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 25;
     private final static int CROSSMETHOD = 1; //1 for PMX , 2 for BCRC

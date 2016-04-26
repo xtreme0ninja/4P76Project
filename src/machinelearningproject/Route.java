@@ -23,7 +23,7 @@ public class Route {
     public Route(){
         route = new ArrayList<>();
         load = 0;
-        Date startTime = new Date(Dataset.MINTIME);
+        Date startTime = new Date(GeneticAlgorithm.DATASET.minTime);
         completeTime = Calendar.getInstance();
         completeTime.setTime(startTime);
     }
