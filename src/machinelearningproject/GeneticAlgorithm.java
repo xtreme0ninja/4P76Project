@@ -20,7 +20,7 @@ public class GeneticAlgorithm {
     private final static int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private final static int MUTATEMETHOD = 1; //1 for random swap
     private final static double CROSSRATE = 0.8;
-    private final static double MUTATERATE = 0.1;
+    private final static double MUTATERATE = 0;
     private Individual[] population;
 
     public GeneticAlgorithm() {
@@ -299,36 +299,45 @@ public class GeneticAlgorithm {
             Individual child1 = parent1;
             Individual child2 = parent2;
 
-            //Get the routes to add to the children
+            //Get the routes to remove from the opposite parents child
             Route parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
             Route parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
 
-            //Remove the customers in the chosen route from the other parent from child
+            //Remove the customers in the chosen route from the other parents child
             parent2Route = child1.removeCustomersFromChromosomeOnRoute(parent2Route, parent2Route.getRoute().size());
             parent1Route = child2.removeCustomersFromChromosomeOnRoute(parent1Route, parent1Route.getRoute().size());
 
-            //Add the removed customers back into route
+            //Add the removed customers back into route in the optimal location
             addRoutesCustomersToIndividual(parent2Route,child1);
             addRoutesCustomersToIndividual(parent1Route,child2);
             
             //Assign the children to the childs created
             children[i] = child1;
             children[i + 1] = child2;
-
+            
+            //Set the chromosome of the customer the same as the routes, is that important???
         }
-
         return children;
     }
     
+    /**
+     * Adds the givens routes customers to the given individuals routes
+     * @param toAdd The route with customers to add
+     * @param toAddTo The individual which will have customers added to its routes
+     */
+    
     private void addRoutesCustomersToIndividual(Route toAdd, Individual toAddTo){
-        boolean success = false;
+        boolean overCapacity = false;
             boolean added = false;//Used to tell if we've added a customer back in
             for (Customer c : toAdd.getRoute()) {
                 for (Route r : toAddTo.getRoutes()) {
-                    success = r.tryAdd(c);
-                    if (success) {
-                        added = true;
-                        break;
+                    overCapacity = r.makesRouteOverCapacity(c);
+                    if (!overCapacity) {
+                        boolean success = r.findOptimalLocationForCustomer(c);
+                        if(success){
+                            added = true;
+                            break;
+                        }
                     }
                 }
                 //If the customer didnt fit into any route, then add it to a new route
