@@ -1,5 +1,6 @@
 package machinelearningproject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -16,7 +17,7 @@ public class GeneticAlgorithm {
     final static int MAXCAPACITY = 10;
     final static Dataset DATASET = new Dataset(10);
     final static int POPSIZE = 100;
-    final static int NUMGENERATIONS = 25;
+    final static int NUMGENERATIONS = 80;
     private final static int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private final static int MUTATEMETHOD = 1; //1 for random swap
     private final static double CROSSRATE = 0.8;
@@ -42,7 +43,6 @@ public class GeneticAlgorithm {
 //            for (int j = 0; j < POPSIZE; j++) {
 //                System.out.println("Pareto Rank: " + population[j].getParetoRank() + " Cost :" + population[j].getCost() + " Num Routes :" + population[j].getNumRoutes());
 //            }
-
             Individual[] parents = tournamentSelection(4);
 
             Individual[] children = crossover(parents);
@@ -248,24 +248,27 @@ public class GeneticAlgorithm {
 
         return children;
     }
-    
+
     /**
      * Finds the correct customer to insert via PMX
+     *
      * @param toAssign Customer in parent to be assigned
-     * @param into Child chromosome being inserted into, should already have section between cut points assigned
-     * @param mapping Mapping function to handle conflicts with area between cut points
+     * @param into Child chromosome being inserted into, should already have
+     * section between cut points assigned
+     * @param mapping Mapping function to handle conflicts with area between cut
+     * points
      * @param cp1 First cut point
      * @param cp2 Second cut point
      * @return The customer to be inserted
      */
-    private Customer assignWithMapping(Customer toAssign, Customer[] into, Map mapping, int cp1, int cp2){
+    private Customer assignWithMapping(Customer toAssign, Customer[] into, Map mapping, int cp1, int cp2) {
         boolean conflict = true;
         Customer toCheck = toAssign;
-        while(conflict){
+        while (conflict) {
             conflict = false;
             //Check for conflict
             for (int k = cp1; k < cp2; k++) {
-                if(toCheck.getIndex() == into[k].getIndex()){
+                if (toCheck.getIndex() == into[k].getIndex()) {
                     //If there's a conflict, get the customer the conflicting customer maps to
                     toCheck = (Customer) mapping.get(toCheck);
                     k = cp2;
@@ -308,47 +311,106 @@ public class GeneticAlgorithm {
             parent1Route = child2.removeCustomersFromChromosomeOnRoute(parent1Route, parent1Route.getRoute().size());
 
             //Add the removed customers back into route in the optimal location
-            addRoutesCustomersToIndividual(parent2Route,child1);
-            addRoutesCustomersToIndividual(parent1Route,child2);
-            
+            addRoutesCustomersToIndividual(parent2Route, child1);
+            addRoutesCustomersToIndividual(parent1Route, child2);
+
             //Assign the children to the childs created
             children[i] = child1;
             children[i + 1] = child2;
-            
+
             //Set the chromosome of the customer the same as the routes, is that important???
         }
         return children;
     }
-    
+
     /**
      * Adds the givens routes customers to the given individuals routes
+     *
      * @param toAdd The route with customers to add
-     * @param toAddTo The individual which will have customers added to its routes
+     * @param toAddTo The individual which will have customers added to its
+     * routes
      */
-    
-    private void addRoutesCustomersToIndividual(Route toAdd, Individual toAddTo){
+    private void addRoutesCustomersToIndividual(Route toAdd, Individual toAddTo) {
+
+        //If the route is over capacity or not
         boolean overCapacity = false;
-            boolean added = false;//Used to tell if we've added a customer back in
-            for (Customer c : toAdd.getRoute()) {
-                for (Route r : toAddTo.getRoutes()) {
-                    overCapacity = r.makesRouteOverCapacity(c);
-                    if (!overCapacity) {
-                        boolean success = r.findOptimalLocationForCustomer(c);
-                        if(success){
-                            added = true;
-                            break;
-                        }
+
+        for (Customer c : toAdd.getRoute()) {
+            //Used to tell if we've added a customer back in
+            boolean added = false;
+
+            //Maps routes with their old costs before the customer as inserted
+            HashMap oldCosts = new HashMap();
+            
+            //Holds all potential routes with a new customer added
+            ArrayList<Route> custAddedRoutes = new ArrayList<>();
+            
+            //Get the routes where this customer can fit, and save the best cost route
+            //with the customer added in the list
+            for (Route r : toAddTo.getRoutes()) {
+                overCapacity = r.makesRouteOverCapacity(c);
+                if (!overCapacity) {
+                    Route routeWithCustomerAdded = r.findOptimalLocationForCustomer(c);
+                    if (routeWithCustomerAdded != null) {
+                        added = true;
+                        custAddedRoutes.add(routeWithCustomerAdded);
+                        oldCosts.put(routeWithCustomerAdded, r.getCost());
                     }
                 }
-                //If the customer didnt fit into any route, then add it to a new route
-                if (added != true) {
-                    Route r2 = new Route();
-                    r2.tryAdd(c);
-                    toAddTo.addRoute(r2);
-                }
-                added = false;
             }
+
+            //If we found a route where the customer belongs, find the route
+            //which result in the least additional cost
+            if (added) {
+                if (custAddedRoutes.size() == 1) {//if theres only one route, add it
+                    toAdd = custAddedRoutes.get(0);
+                    replaceRouteInIndividual(oldCosts,toAdd,toAddTo);
+                } else {
+                    //Find the route which results in the least additional cost
+                    int bestCost = Integer.MAX_VALUE;
+                    Route toUse = new Route();
+                    for (Route r : custAddedRoutes) {
+                        int withoutCustomerCost = (int) oldCosts.get(r);
+                        int difference = r.getCost() - withoutCustomerCost;
+                        if (difference < bestCost) {
+                            bestCost = difference;
+                            toUse = r;
+                        }
+                    }
+                    
+                    //Replace the old route in toAddTo with the route toUse
+                    replaceRouteInIndividual(oldCosts,toUse,toAddTo);
+                }
+            } else { //If the customer didnt fit into any route, then add it to a new route
+                Route r2 = new Route();
+                r2.tryAdd(c);
+                toAddTo.addRoute(r2);
+            }
+            
+        }
     }
+    
+    /**
+     * Replaces the route in the given individual which is equal to the route in toUse,
+     * but the route in toUse has an additional customer on the route.
+     * @param oldCosts Map to get the cost of the old route
+     * @param toUse Route to be added to the individual
+     * @param toAddTo Individual holding the old route whcih will be replaced
+     */
+    
+    private void replaceRouteInIndividual(HashMap oldCosts, Route toUse, Individual toAddTo){
+        int costOfRoute = (int) oldCosts.get(toUse);
+        boolean done = false;
+        for (int i = 0; i < toAddTo.getRoutes().size(); i++) {
+            Route r = toAddTo.getRoutes().get(i);
+            int cost = r.getCost();
+            if (costOfRoute == cost) {
+                toAddTo.getRoutes().set(i, toUse);
+                done = true;
+            }
+        }
+    }
+    
 
     private Individual[] mutate(Individual[] parents) {
         if (MUTATEMETHOD == 1) {

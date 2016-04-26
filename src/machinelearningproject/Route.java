@@ -105,7 +105,7 @@ public class Route {
         }
     }
 
-    public boolean findOptimalLocationForCustomer(Customer c) {
+    public Route findOptimalLocationForCustomer(Customer c) {
 
         //Store all customers in the route in another array
         ArrayList<Route> potentialRoutes = new ArrayList<>();
@@ -157,10 +157,10 @@ public class Route {
 //        }
 
         if (potentialRoutes.size() == 0) {
-            return false;
+            return null;
         } else if (potentialRoutes.size() == 1) {
-            route = potentialRoutes.get(0).route;
-            return true;
+            return potentialRoutes.get(0);
+            
         } else {
             Route bestRoute = new Route();
             int currentCost = 0;
@@ -173,13 +173,12 @@ public class Route {
                     bestRoute = r;
                 }
             }
-            route = bestRoute.getRoute();
+            return bestRoute;
 //            for (Customer w : route) {
 //                System.out.print(w.getIndex() + ",");
 //            }
 //            System.out.println("Cost:" + this.getCost());
-            int dick = 5;
-            return true;
+          
         }
     }
 
