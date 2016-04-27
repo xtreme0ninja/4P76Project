@@ -20,13 +20,14 @@ public class GeneticAlgorithm {
     final static Dataset DATASET = new Dataset("Data", 0);
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 80;
-    private final static int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
+    private int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private final static int MUTATEMETHOD = 1; //1 for random swap
     private final static double CROSSRATE = 0.8;
     private final static double MUTATERATE = 0;
     private Individual[] population;
 
-    public GeneticAlgorithm() {
+    public GeneticAlgorithm(int crossover) {
+        CROSSMETHOD = crossover;
         population = new Individual[POPSIZE];
         //Initialize the population
         for (int i = 0; i < POPSIZE; i++) {
