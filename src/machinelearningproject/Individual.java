@@ -51,6 +51,15 @@ public class Individual {
         chromosome = dna;
         buildRoutes();
     }
+    
+    public Individual(Individual toCopy){
+        routes = new ArrayList<>();
+        for(Route r : toCopy.getRoutes()){
+            Route toAdd = new Route(r);
+            routes.add(toAdd);
+        }
+        chromosome = toCopy.chromosome;
+    }
 
     /**
      * Gets the list of all the routes in the individual
@@ -114,7 +123,6 @@ public class Individual {
                 }
             }
         }
-
         //Delete all the customers that were given to function
         for (int i = 0; i < toDelete.size(); i++) {
             Customer cDelete = toDelete.get(i);
@@ -124,6 +132,22 @@ public class Individual {
         checkForEmptyRoutes();
         
         return r;
+    }
+    
+    /**
+     * Rebuilds the chromosome using the customers location in the 
+     * routes as the order for the chromosome
+     */
+    
+    public void rebuildChromosomeBasedOnRoutes(){
+        int index = 0;
+        Customer[] newChromosome = new Customer[DATASET.getSize()];
+        for(Route r : routes){
+            for(Customer c: r.getRoute()){
+                newChromosome[index++] = c;
+            }
+        }
+        chromosome = newChromosome;
     }
 
     /**

@@ -302,8 +302,8 @@ public class GeneticAlgorithm {
             Individual parent2 = parents[i + 1];
 
             //Init children to be the same as thier parents
-            Individual child1 = parent1;
-            Individual child2 = parent2;
+            Individual child1 = new Individual(parent1);
+            Individual child2 = new Individual(parent2);
 
             //Get the routes to remove from the opposite parents child
             Route parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
@@ -316,12 +316,17 @@ public class GeneticAlgorithm {
             //Add the removed customers back into route in the optimal location
             addRoutesCustomersToIndividual(parent2Route, child1);
             addRoutesCustomersToIndividual(parent1Route, child2);
+            
+            //Set the chromosome of the customer the same as the routes
+            child1.rebuildChromosomeBasedOnRoutes();
+            child2.rebuildChromosomeBasedOnRoutes();
 
             //Assign the children to the childs created
             children[i] = child1;
             children[i + 1] = child2;
 
-            //Set the chromosome of the customer the same as the routes, is that important???
+            
+            
         }
         return children;
     }
@@ -357,7 +362,7 @@ public class GeneticAlgorithm {
                     if (routeWithCustomerAdded != null) {
                         added = true;
                         custAddedRoutes.add(routeWithCustomerAdded);
-                        oldCosts.put(routeWithCustomerAdded, r.getCost());
+                        oldCosts.put(routeWithCustomerAdded, r);
                     }
                 }
             }
@@ -373,7 +378,8 @@ public class GeneticAlgorithm {
                     int bestCost = Integer.MAX_VALUE;
                     Route toUse = new Route();
                     for (Route r : custAddedRoutes) {
-                        int withoutCustomerCost = (int) oldCosts.get(r);
+                        Route routeWithoutCustomerAdded = (Route) (oldCosts.get(r));
+                        int withoutCustomerCost = routeWithoutCustomerAdded.getCost();
                         int difference = r.getCost() - withoutCustomerCost;
                         if (difference < bestCost) {
                             bestCost = difference;
@@ -402,12 +408,15 @@ public class GeneticAlgorithm {
      */
     
     private void replaceRouteInIndividual(HashMap oldCosts, Route toUse, Individual toAddTo){
-        int costOfRoute = (int) oldCosts.get(toUse);
+        Route routeWithoutCustomerAdded = (Route) (oldCosts.get(toUse));
         boolean done = false;
         for (int i = 0; i < toAddTo.getRoutes().size(); i++) {
             Route r = toAddTo.getRoutes().get(i);
             int cost = r.getCost();
-            if (costOfRoute == cost) {
+            if (r.equals(routeWithoutCustomerAdded)) {
+                if(done){
+                    int dicked  = 5;
+                }
                 toAddTo.getRoutes().set(i, toUse);
                 done = true;
             }
