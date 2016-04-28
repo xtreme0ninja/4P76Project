@@ -62,8 +62,8 @@ public class MachineLearningProject extends Application {
         //Create the graphs of the best individuals
         LineChart lcPMC = createGraph(depot,bestIndividualPMC, "Partially Matched Crossover");
         LineChart lcBCRC = createGraph(depot,bestIndividualBCRC, "Best Cost Route Crossover");
-        LineChart lcBCRCL = createGraph(depot,bestIndividualBCRCL, "LBCRC");
-        LineChart lcBCRCS = createGraph(depot,bestIndividualBCRCS, "SBCRC");
+        LineChart lcBCRCL = createGraph(depot,bestIndividualBCRCL, "BCLRC");
+        LineChart lcBCRCS = createGraph(depot,bestIndividualBCRCS, "BCSRC");
         
         //Add the linecharts to the stage and show it
         backdrop.getChildren().add(lcPMC);
@@ -72,7 +72,7 @@ public class MachineLearningProject extends Application {
         backdrop.getChildren().add(lcBCRCS);
         
         
-        Scene scene = new Scene(backdrop, 1000, 1000);
+        Scene scene = new Scene(backdrop, 1000, 800);
         stage.setScene(scene);
         stage.show();
     }

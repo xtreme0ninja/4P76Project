@@ -19,12 +19,12 @@ public class GeneticAlgorithm {
     final static int MAXCAPACITY = 10;
     final static Dataset DATASET = new Dataset("Data", 7);
     final static int POPSIZE = 100;
-    final static int NUMGENERATIONS = 80;
+    final static int NUMGENERATIONS = 100;
     private int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
     private int longOrShort = 0; //0 for neither , 1 for longest, 2 for shortest
-    private final static int MUTATEMETHOD = 1; //1 for random swap, 2 for route inversion
+    private final static int MUTATEMETHOD = 2; //1 for random swap, 2 for route inversion
     private final static double CROSSRATE = 0.8;
-    private final static double MUTATERATE = 0.8;
+    private final static double MUTATERATE = 0.2;
     private Individual[] population;
 
     public GeneticAlgorithm(int crossover, int BCRCtype) {
@@ -185,7 +185,7 @@ public class GeneticAlgorithm {
         if (CROSSMETHOD == 1) {
             return crossoverPMX(parents);
         } else if (CROSSMETHOD == 2) {
-            return bestCostRouteCrossover(parents,longOrShort);
+            return bestCostRouteCrossover(parents, longOrShort);
         }
         return null;
     }
@@ -307,38 +307,40 @@ public class GeneticAlgorithm {
             Individual child1 = new Individual(parent1);
             Individual child2 = new Individual(parent2);
 
-            //Get the routes to remove from the opposite parents child
-            Route parent1Route = new Route();
-            Route parent2Route = new Route();
-            if(longestOrShortest == 0){
-                parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
-                parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
-            }else if (longestOrShortest == 1){
-                parent1Route = parent1.getMostCustomerRoute();
-                parent2Route = parent2.getMostCustomerRoute();
-            }else if (longestOrShortest == 2){
-                parent1Route = parent1.getLeastCustomerRoute();
-                parent2Route = parent2.getLeastCustomerRoute();
+            if (rand.nextDouble() < CROSSRATE) {
+
+                //Get the routes to remove from the opposite parents child
+                Route parent1Route = new Route();
+                Route parent2Route = new Route();
+                if (longestOrShortest == 0) {
+                    parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
+                    parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
+                } else if (longestOrShortest == 1) {
+                    parent1Route = parent1.getMostCustomerRoute();
+                    parent2Route = parent2.getMostCustomerRoute();
+                } else if (longestOrShortest == 2) {
+                    parent1Route = parent1.getLeastCustomerRoute();
+                    parent2Route = parent2.getLeastCustomerRoute();
+                }
+
+                //Remove the customers in the chosen route from the other parents child
+                parent2Route = child1.removeCustomersFromChromosomeOnRoute(parent2Route, parent2Route.getRoute().size());
+                parent1Route = child2.removeCustomersFromChromosomeOnRoute(parent1Route, parent1Route.getRoute().size());
+
+                //Add the removed customers back into route in the optimal location
+                addRoutesCustomersToIndividual(parent2Route, child1);
+                addRoutesCustomersToIndividual(parent1Route, child2);
+
+                //Set the chromosome of the customer the same as the routes
+                child1.rebuildChromosomeBasedOnRoutes();
+                child2.rebuildChromosomeBasedOnRoutes();
+
             }
-
-            //Remove the customers in the chosen route from the other parents child
-            parent2Route = child1.removeCustomersFromChromosomeOnRoute(parent2Route, parent2Route.getRoute().size());
-            parent1Route = child2.removeCustomersFromChromosomeOnRoute(parent1Route, parent1Route.getRoute().size());
-
-            //Add the removed customers back into route in the optimal location
-            addRoutesCustomersToIndividual(parent2Route, child1);
-            addRoutesCustomersToIndividual(parent1Route, child2);
-            
-            //Set the chromosome of the customer the same as the routes
-            child1.rebuildChromosomeBasedOnRoutes();
-            child2.rebuildChromosomeBasedOnRoutes();
 
             //Assign the children to the childs created
             children[i] = child1;
             children[i + 1] = child2;
 
-            
-            
         }
         return children;
     }
@@ -361,10 +363,10 @@ public class GeneticAlgorithm {
 
             //Maps routes with their old costs before the customer as inserted
             HashMap oldCosts = new HashMap();
-            
+
             //Holds all potential routes with a new customer added
             ArrayList<Route> custAddedRoutes = new ArrayList<>();
-            
+
             //Get the routes where this customer can fit, and save the best cost route
             //with the customer added in the list
             for (Route r : toAddTo.getRoutes()) {
@@ -384,7 +386,7 @@ public class GeneticAlgorithm {
             if (added) {
                 if (custAddedRoutes.size() == 1) {//if theres only one route, add it
                     toAdd = custAddedRoutes.get(0);
-                    replaceRouteInIndividual(oldCosts,toAdd,toAddTo);
+                    replaceRouteInIndividual(oldCosts, toAdd, toAddTo);
                 } else {
                     //Find the route which results in the least additional cost
                     int bestCost = Integer.MAX_VALUE;
@@ -398,28 +400,28 @@ public class GeneticAlgorithm {
                             toUse = r;
                         }
                     }
-                    
+
                     //Replace the old route in toAddTo with the route toUse
-                    replaceRouteInIndividual(oldCosts,toUse,toAddTo);
+                    replaceRouteInIndividual(oldCosts, toUse, toAddTo);
                 }
             } else { //If the customer didnt fit into any route, then add it to a new route
                 Route r2 = new Route();
                 r2.tryAdd(c);
                 toAddTo.addRoute(r2);
             }
-            
+
         }
     }
-    
+
     /**
-     * Replaces the route in the given individual which is equal to the route in toUse,
-     * but the route in toUse has an additional customer on the route.
+     * Replaces the route in the given individual which is equal to the route in
+     * toUse, but the route in toUse has an additional customer on the route.
+     *
      * @param oldCosts Map to get the cost of the old route
      * @param toUse Route to be added to the individual
      * @param toAddTo Individual holding the old route whcih will be replaced
      */
-    
-    private void replaceRouteInIndividual(HashMap oldCosts, Route toUse, Individual toAddTo){
+    private void replaceRouteInIndividual(HashMap oldCosts, Route toUse, Individual toAddTo) {
         Route routeWithoutCustomerAdded = (Route) (oldCosts.get(toUse));
         for (int i = 0; i < toAddTo.getRoutes().size(); i++) {
             Route r = toAddTo.getRoutes().get(i);
@@ -429,24 +431,26 @@ public class GeneticAlgorithm {
             }
         }
     }
-    
 
     /**
      * Performs a mutation operation
+     *
      * @param parents Set of individuals to perform mutation on
      * @return Mutated individuals
      */
     private Individual[] mutate(Individual[] parents) {
         if (MUTATEMETHOD == 1) {
             return mutateSwap(parents);
-        } else if (MUTATEMETHOD == 2){
+        } else if (MUTATEMETHOD == 2) {
             return mutateRouteInversion(parents);
         }
         return null;
     }
 
     /**
-     * Performs a swap mutation, switching the position of two customers in the chromosome
+     * Performs a swap mutation, switching the position of two customers in the
+     * chromosome
+     *
      * @param parents Set of individuals to perform mutation on
      * @return Mutated individuals
      */
@@ -471,60 +475,60 @@ public class GeneticAlgorithm {
         }
         return mutated;
     }
-    
+
     /**
-     * Performs a constrained route inversion mutation.
-     * One route of length 2 or 3 is chosen at random to have its direction reversed.
+     * Performs a constrained route inversion mutation. One route of length 2 or
+     * 3 is chosen at random to have its direction reversed.
+     *
      * @param parents Set of individuals to perform mutation on
      * @return Mutated individuals
      */
-    private Individual[] mutateRouteInversion(Individual[] parents){
+    private Individual[] mutateRouteInversion(Individual[] parents) {
         Individual[] mutated = new Individual[parents.length];
         Random rand = new Random();
-        
+
         for (int i = 0; i < parents.length; i++) {
-            if(rand.nextDouble() < MUTATERATE){
+            if (rand.nextDouble() < MUTATERATE) {
                 List<Route> routes = parents[i].getRoutes();
-                
+
                 //Don't consider routes with too few or too many customers, ideal is 2 to 3
                 //Route with 1 customer won't change after inversion
                 //Route with more than 3 customers has a high chance of time windows not lining up, causing split into multiple new routes
                 List<Route> trimmedRoutes = new ArrayList<>();
                 for (Route route : routes) {
-                    if(route.getLength() > 1 && route.getLength() < 4){
+                    if (route.getLength() > 1 && route.getLength() < 4) {
                         trimmedRoutes.add(route);
                     }
                 }
-                
-                if(trimmedRoutes.size() > 0){
+
+                if (trimmedRoutes.size() > 0) {
                     //If there are viable routes to reverse, choose one at random
                     Route selectedRoute = trimmedRoutes.get(rand.nextInt(trimmedRoutes.size()));
-                    
-                    
+
                     //Get the start and end points of the route on the chromosome
                     int routeStart = 0;
                     for (int j = 0; j < routes.size(); j++) {
-                        if(routes.get(j) == selectedRoute){
+                        if (routes.get(j) == selectedRoute) {
                             j = routes.size();
                         } else {
                             routeStart += routes.get(j).getLength();
                         }
                     }
                     int routeEnd = routeStart + selectedRoute.getLength();
-                    
+
                     //Reverse the selected route
                     List<Customer> routeCustomers = new ArrayList<>(selectedRoute.getRoute());
                     Collections.reverse(routeCustomers);
-                    
+
                     //Put together new chromosome with the reversed route
                     Customer[] dna = parents[i].getChromosome();
                     for (int j = routeStart; j < routeEnd; j++) {
-                        dna[j] = routeCustomers.get(j-routeStart);
+                        dna[j] = routeCustomers.get(j - routeStart);
                     }
-                    
+
                     //Add to mutated list
                     mutated[i] = new Individual(dna);
-                } else{
+                } else {
                     //No routes of correct length, no mutation is done
                     mutated[i] = parents[i];
                 }
@@ -532,7 +536,7 @@ public class GeneticAlgorithm {
                 mutated[i] = parents[i];
             }
         }
-        
+
         return mutated;
     }
 }
