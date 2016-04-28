@@ -21,7 +21,7 @@ public class GeneticAlgorithm {
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 80;
     private int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
-    private final static int MUTATEMETHOD = 1; //1 for random swap
+    private final static int MUTATEMETHOD = 2; //1 for random swap, 2 for route inversion
     private final static double CROSSRATE = 0.8;
     private final static double MUTATERATE = 0;
     private Individual[] population;

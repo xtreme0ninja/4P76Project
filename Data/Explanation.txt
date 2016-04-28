@@ -1,0 +1,91 @@
+===============================================
+ Wide range of possible times, low window size
+===============================================
+
+VRP0
+Bound: 2500
+Min time: 0
+Max time: 1439
+Max window: 120
+Max capacity: 10
+Max demand: 4
+Num customers: 10
+
+----------------------
+
+VRP1
+Bound: 2500
+Min time: 0
+Max time: 1439
+Max window: 120
+Max capacity: 10
+Max demand: 4
+Num customers: 25
+
+----------------------
+
+VRP2
+Bound: 2500
+Min time: 0
+Max time: 1439
+Max window: 120
+Max capacity: 10
+Max demand: 4
+Num customers: 50
+
+----------------------
+
+VRP3
+Bound: 2500
+Min time: 0
+Max time: 1439
+Max window: 120
+Max capacity: 10
+Max demand: 4
+Num customers: 100
+
+=====================================================
+ Smaller range of possible times, larger window size
+=====================================================
+
+VRP4
+Bound: 2500
+Min time: 480
+Max time: 1199
+Max window: 240
+Max capacity: 10
+Max demand: 4
+Num customers: 10
+
+----------------------
+
+VRP5
+Bound: 2500
+Min time: 480
+Max time: 1199
+Max window: 240
+Max capacity: 10
+Max demand: 4
+Num customers: 25
+
+----------------------
+
+VRP6
+Bound: 2500
+Min time: 480
+Max time: 1199
+Max window: 240
+Max capacity: 10
+Max demand: 4
+Num customers: 50
+
+----------------------
+
+VRP7
+Bound: 2500
+Min time: 480
+Max time: 1199
+Max window: 240
+Max capacity: 10
+Max demand: 4
+Num customers: 100
