@@ -27,11 +27,17 @@ public class MachineLearningProject extends Application {
      */
     @Override
     public void start(Stage stage) {
-        GeneticAlgorithm GApmc = new GeneticAlgorithm(1);
+        GeneticAlgorithm GApmc = new GeneticAlgorithm(1,0);
         GApmc.evolve();
         
-        GeneticAlgorithm GAbcrc = new GeneticAlgorithm(2);
+        GeneticAlgorithm GAbcrc = new GeneticAlgorithm(2,0);
         GAbcrc.evolve();
+        
+        GeneticAlgorithm GAbcrcL = new GeneticAlgorithm(2,1);
+        GAbcrcL.evolve();
+        
+        GeneticAlgorithm GAbcrcS = new GeneticAlgorithm(2,2);
+        GAbcrcS.evolve();
         
         Point depot = GeneticAlgorithm.DATASET.getDepot();
         
@@ -44,20 +50,29 @@ public class MachineLearningProject extends Application {
         //Get the all the solutions from each crossover method
         Individual[] allIndividualsPMC = GApmc.getPopulation();
         Individual[] allIndividualsBCRC = GAbcrc.getPopulation();
+        Individual[] allIndividualsBCRCL = GAbcrcL.getPopulation();
+        Individual[] allIndividualsBCRCS = GAbcrcS.getPopulation();
         
         //Since it sorts based on pareto rank, the best individuals are at the start
         Individual bestIndividualPMC = allIndividualsPMC[0];
         Individual bestIndividualBCRC = allIndividualsBCRC[0];
+        Individual bestIndividualBCRCL = allIndividualsBCRCL[0];
+        Individual bestIndividualBCRCS = allIndividualsBCRCS[0];
         
         //Create the graphs of the best individuals
         LineChart lcPMC = createGraph(depot,bestIndividualPMC, "Partially Matched Crossover");
         LineChart lcBCRC = createGraph(depot,bestIndividualBCRC, "Best Cost Route Crossover");
+        LineChart lcBCRCL = createGraph(depot,bestIndividualBCRCL, "LBCRC");
+        LineChart lcBCRCS = createGraph(depot,bestIndividualBCRCS, "SBCRC");
         
         //Add the linecharts to the stage and show it
         backdrop.getChildren().add(lcPMC);
         backdrop.getChildren().add(lcBCRC);
+        backdrop.getChildren().add(lcBCRCL);
+        backdrop.getChildren().add(lcBCRCS);
         
-        Scene scene = new Scene(backdrop, 1100, 400);
+        
+        Scene scene = new Scene(backdrop, 1000, 1000);
         stage.setScene(scene);
         stage.show();
     }
@@ -119,7 +134,7 @@ public class MachineLearningProject extends Application {
         
         lineChart.setAxisSortingPolicy(LineChart.SortingPolicy.NONE);
         
-        lineChart.setTitle(crossoverType + "- Cost: " + totalCost);
+        lineChart.setTitle(crossoverType + "- Cost: " + totalCost + " Num customers:" + toGraph.getNumCustomersInRoutes());
         
         System.out.println(crossoverType + " output");
         System.out.println("The cost of the best route:" + totalCost + " and it used " + allRoutes.size() + " drivers");

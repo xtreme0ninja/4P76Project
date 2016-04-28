@@ -17,16 +17,18 @@ import org.apache.commons.lang3.ArrayUtils;
 public class GeneticAlgorithm {
 
     final static int MAXCAPACITY = 10;
-    final static Dataset DATASET = new Dataset("Data", 0);
+    final static Dataset DATASET = new Dataset("Data", 7);
     final static int POPSIZE = 100;
     final static int NUMGENERATIONS = 80;
     private int CROSSMETHOD = 2; //1 for PMX , 2 for BCRC
-    private final static int MUTATEMETHOD = 2; //1 for random swap, 2 for route inversion
+    private int longOrShort = 0; //0 for neither , 1 for longest, 2 for shortest
+    private final static int MUTATEMETHOD = 1; //1 for random swap, 2 for route inversion
     private final static double CROSSRATE = 0.8;
-    private final static double MUTATERATE = 0;
+    private final static double MUTATERATE = 0.8;
     private Individual[] population;
 
-    public GeneticAlgorithm(int crossover) {
+    public GeneticAlgorithm(int crossover, int BCRCtype) {
+        longOrShort = BCRCtype;
         CROSSMETHOD = crossover;
         population = new Individual[POPSIZE];
         //Initialize the population
@@ -183,7 +185,7 @@ public class GeneticAlgorithm {
         if (CROSSMETHOD == 1) {
             return crossoverPMX(parents);
         } else if (CROSSMETHOD == 2) {
-            return bestCostRouteCrossover(parents);
+            return bestCostRouteCrossover(parents,longOrShort);
         }
         return null;
     }
@@ -290,7 +292,7 @@ public class GeneticAlgorithm {
      * @param parents Parents to do crossover on
      * @return The children of the parents
      */
-    private Individual[] bestCostRouteCrossover(Individual[] parents) {
+    private Individual[] bestCostRouteCrossover(Individual[] parents, int longestOrShortest) {
         Random rand = new Random();
         Individual[] children = new Individual[parents.length];
 
@@ -306,8 +308,18 @@ public class GeneticAlgorithm {
             Individual child2 = new Individual(parent2);
 
             //Get the routes to remove from the opposite parents child
-            Route parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
-            Route parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
+            Route parent1Route = new Route();
+            Route parent2Route = new Route();
+            if(longestOrShortest == 0){
+                parent1Route = parent1.getRoutes().get(rand.nextInt(parent1.getNumRoutes()));
+                parent2Route = parent2.getRoutes().get(rand.nextInt(parent2.getNumRoutes()));
+            }else if (longestOrShortest == 1){
+                parent1Route = parent1.getMostCustomerRoute();
+                parent2Route = parent2.getMostCustomerRoute();
+            }else if (longestOrShortest == 2){
+                parent1Route = parent1.getLeastCustomerRoute();
+                parent2Route = parent2.getLeastCustomerRoute();
+            }
 
             //Remove the customers in the chosen route from the other parents child
             parent2Route = child1.removeCustomersFromChromosomeOnRoute(parent2Route, parent2Route.getRoute().size());
@@ -409,16 +421,11 @@ public class GeneticAlgorithm {
     
     private void replaceRouteInIndividual(HashMap oldCosts, Route toUse, Individual toAddTo){
         Route routeWithoutCustomerAdded = (Route) (oldCosts.get(toUse));
-        boolean done = false;
         for (int i = 0; i < toAddTo.getRoutes().size(); i++) {
             Route r = toAddTo.getRoutes().get(i);
             int cost = r.getCost();
             if (r.equals(routeWithoutCustomerAdded)) {
-                if(done){
-                    int dicked  = 5;
-                }
                 toAddTo.getRoutes().set(i, toUse);
-                done = true;
             }
         }
     }

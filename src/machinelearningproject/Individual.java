@@ -178,6 +178,43 @@ public class Individual {
         s += ")";
         return s;
     }
+    
+    
+    public Route getMostCustomerRoute(){
+        Route longest = new Route();
+        int longestRoute = 0;
+        int currentRoute = 0;
+        for (Route r : routes) {
+            for(Customer c : r.getRoute()){
+                currentRoute++;
+            }
+            if(currentRoute > longestRoute){
+                longestRoute = currentRoute;
+                currentRoute = 0;
+                longest = r;
+            }
+        }
+        
+        return longest;
+    }
+    
+    public Route getLeastCustomerRoute(){
+        Route longest = new Route();
+        int longestRoute = Integer.MAX_VALUE;
+        int currentRoute = 0;
+        for (Route r : routes) {
+            for(Customer c : r.getRoute()){
+                currentRoute++;
+            }
+            if(currentRoute < longestRoute){
+                longestRoute = currentRoute;
+                currentRoute = 0;
+                longest = r;
+            }
+        }
+        
+        return longest;
+    }
 
     /**
      * Returns the number of routes needed for the given solution. This is also
